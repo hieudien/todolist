@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To Do list</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // image source
+      const doneImgSrc =
+        "https://icon-library.com/images/all-done-icon/all-done-icon-7.jpg";
+      const deleteImgSrc = "https://cdn.iconscout.com/icon/premium/png-512-thumb/delete-1432400-1211078.png";
+
+      $(document).ready(getList());
+
+      // get list Item
+      function getList() {
+        // clear old list
+        $("ul").empty()
+        // get list 
+        $.get("/item", function (data) {
+          if (data) {
+            data.forEach((item) => {
+                const id = item._id;
+              if (item.isDone) {
+                  // append Item to Done list
+                $("#done-list").append(`
+                    <li>
+                        <img class="redone-img" src="` + doneImgSrc + `" alt="Mark as Done" width="20" height="20" id="`+item._id+`" onclick='updateItemStatus(this, false)'>
+                        <img src="` + deleteImgSrc + `" alt="Delete Item" width="20" height="20" id="`+item._id+`" onclick='deleteItem(this)'>
+                        ` +item.name +`
+                    </li>
+                `);
+              } else {
+                  // append Item to Not Done list
+                $("#list").append(`
+                    <li>
+                        <img src="` + doneImgSrc + `" alt="Mark as Done" width="20" height="20" id="`+item._id+`" onclick='updateItemStatus(this, true)'>
+                        <img src="` + deleteImgSrc + `" alt="Delete Item" width="20" height="20" id="`+item._id+`" onclick='deleteItem(this)'>
+                        ` +item.name +`
+                    </li>
+                `);
+              }
+            });
+          }
+        });
+      }
+
+      // update Item status - isDone: true or false
+      function updateItemStatus(item, isDone) {
+        $.ajax({
+            url:"/item/"+item.id,
+            type:"PATCH",
+            data:JSON.stringify({isDone}),
+            contentType:"application/json; charset=utf-8",
+            dataType:"json",
+            success: function(){
+                alert("Item Updated");
+                getList();
+            }
+        });
+      }
+
+      // delete an Item
+      function deleteItem(item) {
+        $.ajax({
+            url:"/item/"+item.id,
+            type:"DELETE",
+            success: function(){
+                alert("Item deleted");
+                getList();
+            }
+        });
+      }
+
+      // create new Item
+      function createItem(){
+          const name = $("#name").val();
+          if (!name) {
+              return;
+          }
+          $.ajax({
+            url:"/item",
+            type:"POST",
+            data:JSON.stringify({name}),
+            contentType:"application/json; charset=utf-8",
+            dataType:"json",
+            success: function(){
+                alert("Item created");
+                getList();
+            }
+        });
+      }
+    </script>
+    <style>
+        img {
+            cursor: pointer;
+        }
+        ul {
+            list-style-type: none
+        }
+         /* make image as black and white */
+        .redone-img {
+            -webkit-filter: grayscale(100%);
+            filter: grayscale(100%);
+        }
+    </style>
+  </head>
+  <body>
+    <div>
+        <input type="text" id="name">
+        <button onclick="createItem()">Add Item</button>
+    </div>
+
+    <h1>To do:</h1>
+
+    <div>
+      <ul id="list"></ul>
+    </div>
+
+    <h1>Done:</h1>
+
+    <div>
+      <ul id="done-list"></ul>
+    </div>
+
+  </body>
+</html>
