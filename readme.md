@@ -3,11 +3,11 @@ This is a simple demo of create APIs using Express, Mongooes for Wiserobot inter
 
 Install:
 <br>
-    npm install
+    `npm install`
 
 Run:
 <br>
-    npm run dev
+    `npm run dev`
 
 App working at:
 <br>
