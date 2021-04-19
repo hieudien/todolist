@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const path = require("path");
+const cors = require('cors');
 require("dotenv").config();
 
 // Connect to MongoDB
@@ -12,6 +13,10 @@ mongoose.connect(process.env.DB_CONNECTION, {
 const db = mongoose.connection;
 db.on("error", (error) => console.error(error.message));
 db.on("open", () => console.log("Connected to DB"));
+
+// allow cors
+app.use(cors());
+app.options('*', cors());
 
 // allow app use json
 app.use(express.json());
@@ -26,4 +31,4 @@ app.get("/", (req, res) =>
 );
 
 // Listening to port
-app.listen(8080, () => console.log("Server running at http://localhost:8080/"));
+app.listen(process.env.PORT, () => console.log("Server running at http://localhost:" + process.env.PORT));

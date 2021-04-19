@@ -5,7 +5,18 @@ const Item = require("../models/Item");
 // Get all Item
 router.get("/", async (req, res) => {
   try {
-    const items = await Item.find();
+    let items;
+    // filter by isDone
+    if (req.query.status === "done") {
+      // find items is done
+      items = await Item.find({ isDone: true });
+    } else if (req.query.status === "notyet") {
+      // find items is not done
+      items = await Item.find({ isDone: false });
+    } else {
+      // find all items
+      items = await Item.find();
+    }
     res.status(200).json(items);
   } catch (error) {
     res.status(500).json({ message: error.message });
