@@ -21,6 +21,9 @@ app.options('*', cors());
 // allow app use json
 app.use(express.json({limit: '50mb'}));
 
+// make uploads/images folder be static to client
+app.use('/images', express.static(process.env.UPLOAD_IMAGE_PATH))
+
 // set Item router
 const itemRouter = require("./routes/Item");
 app.use("/item", itemRouter);

@@ -7,8 +7,7 @@ const itemSchema = mongoose.Schema({
     },
 
     image: {
-        name: String,
-        content: String
+        type: String,
     },
 
     isDone: {
