@@ -6,6 +6,11 @@ const itemSchema = mongoose.Schema({
         required: true
     },
 
+    image: {
+        name: String,
+        content: String
+    },
+
     isDone: {
         type: Boolean,
         default: false

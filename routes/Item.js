@@ -27,6 +27,7 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const item = new Item({
     name: req.body.name,
+    image: req.body.image,
   });
   try {
     const newItem = await item.save();

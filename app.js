@@ -19,7 +19,7 @@ app.use(cors());
 app.options('*', cors());
 
 // allow app use json
-app.use(express.json());
+app.use(express.json({limit: '50mb'}));
 
 // set Item router
 const itemRouter = require("./routes/Item");
