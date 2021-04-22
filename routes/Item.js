@@ -41,7 +41,7 @@ router.get("/", async (req, res) => {
 router.post("/", upload.single("image"), async (req, res) => {
   const item = new Item({
     name: req.body.name,
-    image: req.file.filename
+    image: req.file?.filename
   })
   try {
     const newItem = await item.save()
