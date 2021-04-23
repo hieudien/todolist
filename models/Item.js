@@ -1,3 +1,5 @@
+const moment = require("moment")
+
 const mongoose = require("mongoose")
 
 const itemSchema = mongoose.Schema({
@@ -6,8 +8,16 @@ const itemSchema = mongoose.Schema({
         required: true
     },
 
-    image: {
-        type: String,
+    image: String,
+
+    expiredDateTime: {
+        type: Date,
+        validate: {
+            validator: function(value) {
+              return this._id || moment(value).isAfter(moment())
+            },
+            message: props => `Expired time is invalid!`
+        },
     },
 
     isDone: {
