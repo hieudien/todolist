@@ -3,6 +3,8 @@ const router = express.Router()
 const multer = require("multer")
 const Item = require("../models/Item")
 const fs = require('fs')
+const { Parser } = require('json2csv')
+
 
 // setup multer storeage
 const storage = multer.diskStorage({
@@ -76,6 +78,45 @@ router.delete("/:id", getItem, async (req, res) => {
     // remove image
     fs.unlink(process.env.UPLOAD_IMAGE_PATH + res.item.image, (err) => err)
     res.json({ message: "Item deleted" })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+})
+
+
+// Download all Item as csv file
+router.get("/csv", async (req, res) => {
+  try {
+    let items
+    // filter by isDone
+    if (req.query.status === "done") {
+      // find items is done
+      items = await Item.find({ isDone: true })
+    } else if (req.query.status === "notyet") {
+      // find items is not done
+      items = await Item.find({ isDone: false })
+    } else {
+      // find all items
+      items = await Item.find()
+    }
+    const json2csv = new Parser({ fields: [
+      {
+        label: 'Name',
+        value: 'name'
+      },
+      {
+        label: 'Is Done',
+        value: 'isDone'
+      },
+      {
+       label: 'Expires',
+        value: 'expires'
+      }
+    ]});
+    const csv = json2csv.parse(items);
+    res.header('Content-Type', 'text/csv');
+    res.attachment('todo.csv');
+    res.status(200).send(csv);
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
