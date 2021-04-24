@@ -41,7 +41,7 @@ router.get("/", async (req, res) => {
 router.post("/", upload.single("image"), async (req, res) => {
   const item = new Item({
     name: req.body.name,
-    expiredDateTime: req.body.expiredDateTime,
+    expires: req.body.expires,
     image: req.file?.filename
   })
   try {

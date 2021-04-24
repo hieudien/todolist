@@ -10,7 +10,7 @@ const itemSchema = mongoose.Schema({
 
     image: String,
 
-    expiredDateTime: {
+    expires: {
         type: Date,
         validate: {
             validator: function(value) {
