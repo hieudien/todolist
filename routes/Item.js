@@ -1,22 +1,10 @@
 const express = require("express")
 const router = express.Router()
-const multer = require("multer")
 const Item = require("../models/Item")
 const fs = require('fs')
 const { Parser } = require('json2csv')
-
-
-// setup multer storeage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, process.env.UPLOAD_IMAGE_PATH)
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + file.originalname)
-  }
-})
- 
-const upload = multer({ storage: storage })
+const UploadServices = require("../services/UploadServices")
+const csvtojson = require("csvtojson")
 
 // Get all Item
 router.get("/", async (req, res) => {
@@ -39,8 +27,9 @@ router.get("/", async (req, res) => {
   }
 })
 
+
 // Create Item
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", UploadServices.uploadImage.single("image"), async (req, res) => {
   const item = new Item({
     name: req.body.name,
     expires: req.body.expires,
@@ -85,7 +74,7 @@ router.delete("/:id", getItem, async (req, res) => {
 
 
 // Download all Item as csv file
-router.get("/csv", async (req, res) => {
+router.get("/export", async (req, res) => {
   try {
     let items
     // filter by isDone
@@ -118,6 +107,37 @@ router.get("/csv", async (req, res) => {
     res.attachment('todo.csv');
     res.status(200).send(csv);
   } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+})
+
+router.post("/import", UploadServices.uploadCsv.single("csv"), async(req, res) => {
+  const session = await Item.startSession();
+  session.startTransaction();
+  try {
+    await Item.deleteMany(null, { session })
+    csvtojson().fromFile(process.env.UPLOAD_CSV_PATH + req.file?.filename).then(fileData => {
+      const toImportData = fileData.map(item => {
+        return {
+          name: item['Name'],
+          isDone: item['Is Done'],
+          expires: item['Expires']
+        }
+      })
+      Item.insertMany(toImportData, { session }).then(() => {
+        // commit and then transaction
+        session.commitTransaction().then(() => {
+          session.endSession()
+          res.json({ message: "Imported" })
+        })
+      }).catch(err => err)
+      // remove csv file
+      .finally(() => fs.unlink(process.env.UPLOAD_CSV_PATH + req.file.filename, (err) => err))
+    })
+  } catch (error) {
+    // abort and then transaction
+    await session.abortTransaction();
+    session.endSession();
     res.status(500).json({ message: error.message })
   }
 })
